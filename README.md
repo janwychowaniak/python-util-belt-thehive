@@ -153,6 +153,66 @@ for obs in observables:
 
 ---
 
+### api_connector
+
+**API Connector** - Bulletproof connection establishment and health checking for TheHive and Cortex
+
+Provides reliable, health-checked API connections with intelligent error categorization. Each connection is immediately verified with a probe call to distinguish between configuration errors (bad credentials) and infrastructure problems (bad host/port, network issues).
+
+**Features:**
+- Automatic health checking for both TheHive and Cortex connections
+- Intelligent error categorization (ValueError for config, ConnectionError for infrastructure)
+- Environment variable support with explicit parameter override
+- Detailed error messages with actionable hints
+- Flexible logging (stdlib, loguru, or custom)
+
+**Usage:**
+```python
+from api_connector import get_thehive_api, get_cortex_api
+
+# Using environment variables
+thehive_api = get_thehive_api()
+cortex_api = get_cortex_api()
+
+# Using explicit parameters
+thehive_api = get_thehive_api(
+    thehive_url='https://thehive.local:9000',
+    api_key='your-thehive-key'
+)
+
+cortex_api = get_cortex_api(
+    cortex_url='https://cortex.local:9001',
+    api_key='your-cortex-key'
+)
+
+# With custom logger
+from loguru import logger
+api = get_thehive_api(logger=logger)
+
+# Handle errors
+try:
+    api = get_thehive_api()
+except ValueError as e:
+    print(f"Configuration error: {e}")
+except ConnectionError as e:
+    print(f"Connection failed: {e}")
+```
+
+**Environment Variables:**
+- `THEHIVE_URL` - TheHive instance URL
+- `THEHIVE_API_KEY` - TheHive API key
+- `CORTEX_URL` - Cortex instance URL
+- `CORTEX_API_KEY` - Cortex API key
+
+**Dependencies:** Requires both `thehive4py` and `cortex4py` libraries
+```bash
+pip install thehive4py cortex4py
+```
+
+**Version:** 1.0 | **Author:** Jan
+
+---
+
 ## Development Workflow
 
 ### Adding New Utilities

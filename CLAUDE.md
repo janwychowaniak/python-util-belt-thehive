@@ -242,6 +242,68 @@ observable = {
 }
 ```
 
+## Current Modules
+
+### thehive_search (v1.0)
+
+**Purpose**: Search TheHive cases with flexible filters
+
+**Location**: `modules/thehive_search.py`
+
+**Functions**:
+- `search_cases(status, severity, tags, max_results, thehive_url, api_key, logger) -> List[Dict]` - Search cases with filters
+- `get_case_by_id(case_id, thehive_url, api_key, logger) -> Optional[Dict]` - Retrieve single case
+
+**Dependencies**: `thehive4py`
+
+**Environment Variables**: `THEHIVE_URL`, `THEHIVE_API_KEY`
+
+**Dev-notes**: See `dev-notes/thehive_search.md`
+
+### ioc_parser (v1.0)
+
+**Purpose**: Extract and normalize Indicators of Compromise from text
+
+**Location**: `modules/ioc_parser.py`
+
+**Functions**:
+- `extract_iocs(text, refang, deduplicate, normalize) -> Dict[str, List[str]]` - Extract IOCs from text
+- `format_for_thehive(iocs, tlp, tags, message) -> List[Dict]` - Convert to TheHive observable format
+
+**Dependencies**: None (pure stdlib)
+
+**Environment Variables**: None
+
+**Dev-notes**: See `dev-notes/ioc_parser.md`
+
+### api_connector (v1.0)
+
+**Purpose**: Bulletproof connection establishment and health checking for TheHive and Cortex APIs
+
+**Location**: `modules/api_connector.py`
+
+**Functions**:
+- `get_thehive_api(thehive_url, api_key, logger) -> TheHiveApi` - Establish health-checked TheHive connection
+- `get_cortex_api(cortex_url, api_key, logger) -> CortexApi` - Establish health-checked Cortex connection
+
+**Dependencies**:
+- `thehive4py` - TheHive API client library
+- `cortex4py` - Cortex API client library
+
+**Environment Variables**:
+- `THEHIVE_URL`, `THEHIVE_API_KEY` - TheHive connection details
+- `CORTEX_URL`, `CORTEX_API_KEY` - Cortex connection details
+
+**Error Handling**:
+- `ValueError` - Configuration errors (missing/invalid credentials)
+- `ConnectionError` - Infrastructure errors (bad host/port, network issues)
+
+**Health Checks**:
+- TheHive: `api.get_current_user()` with status code parsing (401=bad key, 502=bad host, TheHiveException=bad port)
+- Cortex: `api.analyzers.find_all({})` with exception type parsing (AuthenticationError=bad key, InvalidInputError=bad host, ServiceUnavailableError=bad port)
+
+**Dev-notes**: See `dev-notes/api_connector.md`
+
 ## Development Workflow
 
 ### Adding New Modules
