@@ -213,6 +213,86 @@ pip install thehive4py cortex4py
 
 ---
 
+### thehive_extended_api
+
+**Extended TheHive API Operations** - Access endpoints not covered by thehive4py
+
+Extends thehive4py functionality by providing direct access to TheHive API endpoints that aren't exposed in the library's public interface.
+Designed for TheHive v3.4.0 environments where thehive4py==1.6.0 doesn't cover all available endpoints. Provides 15 functions across three categories: server operations, case manipulation, and observable operations.
+
+**Features:**
+- Server metadata access (status, connectors, custom fields, observable data types)
+- Case manipulation (append tags without replace, append descriptions, update TLP/fields)
+- Observable operations (get by ID, update with field filtering, tag management, TLP updates)
+- Observable search (find by dataType + data pair for deduplication checking)
+- Hybrid API pattern (accept existing API object OR url/key params for maximum flexibility)
+- Environment variable support with explicit parameter override
+- Intelligent error handling (ValueError for config, ConnectionError for infrastructure)
+
+**Usage:**
+```python
+from thehive_extended_api import (
+    case_append_tags, case_append_description,
+    obs_append_tags, obsfind_any_by_type_data,
+    get_custom_fields, get_connectors
+)
+
+# Case operations - append tags without replacing existing
+case = case_append_tags('12345', ['malware', 'phishing'])
+
+# Append to case description with titled separator
+case = case_append_description(
+    '12345',
+    'Additional investigation findings',
+    title='SIEM Analysis'
+)
+
+# Observable operations - append tags
+obs = obs_append_tags('abc123def456', ['suspicious', 'external'])
+
+# Search for observables by type + data (name-based for files)
+duplicates = obsfind_any_by_type_data('ip', '192.168.1.100')
+print(f"Found {len(duplicates)} existing IP observables")
+
+# Find true duplicates by content (hash-based for files)
+from thehive_extended_api import obsfind_dupes_by_id
+similars = obsfind_dupes_by_id('abc123def456')  # obs_id
+print(f"Found {len(similars)} files with same hash (excluding original)")
+
+# Server metadata
+fields = get_custom_fields()
+for field in fields:
+    print(f"{field['name']}: {field['type']}")
+
+connectors = get_connectors()
+for conn_type, servers in connectors.items():
+    print(f"{conn_type}: {len(servers)} servers")
+
+# Hybrid pattern - pass existing API object for efficiency
+from thehive4py.api import TheHiveApi
+api = TheHiveApi('https://thehive.local:9000', 'your-key')
+case = case_append_tags('12345', ['test'], api=api)
+obs = obs_append_tags('abc123', ['test'], api=api)
+```
+
+**Environment Variables:**
+- `THEHIVE_URL` - TheHive instance URL
+- `THEHIVE_API_KEY` - TheHive API key
+
+**Dependencies:** Requires `thehive4py` and `requests` libraries
+```bash
+pip install thehive4py requests
+```
+
+**Functions:**
+- **Server:** `get_status()`, `get_connectors()`, `get_custom_fields()`, `get_list_artifactDataType()`, `get_describe_model()`
+- **Case:** `case_append_tags()`, `case_update_tlp()`, `case_append_description()`, `case_update_anyfield()`, `get_linked_cases()`
+- **Observable:** `get_observable()`, `update_observable()`, `obs_append_tags()`, `obs_update_tlp()`, `obsfind_any_by_type_data()`, `obsfind_dupes_by_id()`
+
+**Version:** 1.0 | **Author:** Jan
+
+---
+
 ## Development Workflow
 
 ### Adding New Utilities
@@ -280,10 +360,14 @@ python-util-belt-thehive/
 ├── UTILITY_BELT_SEED_THEHIVE.md  # Complete architectural blueprint
 ├── modules/               # Self-contained utility modules
 │   ├── thehive_search.py  # TheHive API search helper
-│   └── ioc_parser.py      # IOC extraction and normalization
+│   ├── ioc_parser.py      # IOC extraction and normalization
+│   ├── api_connector.py   # Connection establishment and health checking
+│   └── thehive_extended_api.py  # Extended TheHive API operations
 ├── dev-notes/             # Manual testing reference guides
 │   ├── thehive_search.md  # Test scenarios for thehive_search
-│   └── ioc_parser.md      # Test scenarios for ioc_parser
+│   ├── ioc_parser.md      # Test scenarios for ioc_parser
+│   ├── api_connector.md   # Test scenarios for api_connector
+│   └── thehive_extended_api.md  # Test scenarios for thehive_extended_api
 └── scripts/               # Helper tools
     ├── copy_module.sh     # Copy module to target project
     └── list_modules.py    # List available modules with metadata

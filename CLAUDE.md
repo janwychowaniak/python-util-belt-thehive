@@ -304,6 +304,63 @@ observable = {
 
 **Dev-notes**: See `dev-notes/api_connector.md`
 
+### thehive_extended_api (v1.0)
+
+**Purpose**: Extended TheHive API operations not covered by thehive4py
+
+**Location**: `modules/thehive_extended_api.py`
+
+**Functions**:
+
+*Server Operations:*
+- `get_status(api, thehive_url, api_key, logger) -> Dict[str, Any]` - Get server status and version info
+- `get_connectors(api, thehive_url, api_key, logger) -> Dict[str, List[Dict]]` - Get connector availability info
+- `get_custom_fields(api, thehive_url, api_key, logger) -> List[Dict[str, Any]]` - Get custom field definitions
+- `get_list_artifactDataType(api, thehive_url, api_key, logger) -> List[str]` - Get observable data types list
+- `get_describe_model(model, api, thehive_url, api_key, logger) -> Dict[str, Any]` - Get model schema description
+
+*Case Operations:*
+- `case_append_tags(case_id, tags, api, thehive_url, api_key, logger) -> Dict[str, Any]` - Append tags to case (merges with existing, deduplicates)
+- `case_update_tlp(case_id, tlp, api, thehive_url, api_key, logger) -> Dict[str, Any]` - Update case TLP level
+- `case_append_description(case_id, content, title, api, thehive_url, api_key, logger) -> Dict[str, Any]` - Append content to case description with optional titled separator
+- `case_update_anyfield(case_id, field_dict, api, thehive_url, api_key, logger) -> Dict[str, Any]` - Update arbitrary case field
+- `get_linked_cases(case_id, api, thehive_url, api_key, logger) -> List[Dict[str, Any]]` - Get linked cases list
+
+*Observable Operations:*
+- `get_observable(obs_id, api, thehive_url, api_key, logger) -> Optional[Dict[str, Any]]` - Get observable by ID (returns None if not found)
+- `update_observable(obs_json, fields, api, thehive_url, api_key, logger) -> Dict[str, Any]` - Update observable with optional field filtering
+- `obs_append_tags(obs_id, tags, api, thehive_url, api_key, logger) -> Dict[str, Any]` - Append tags to observable
+- `obs_update_tlp(obs_id, tlp, api, thehive_url, api_key, logger) -> Dict[str, Any]` - Update observable TLP level
+- `obsfind_any_by_type_data(dataType, data, api, thehive_url, api_key, logger) -> List[Dict[str, Any]]` - Search observables by dataType + data pair (files by name, non-files by value)
+- `obsfind_dupes_by_id(obs_id, api, thehive_url, api_key, logger) -> List[Dict[str, Any]]` - Find similar observables by ID (files by hash, non-files by value, excludes original)
+
+**Dependencies**:
+- `thehive4py` - TheHive API client library
+- `requests` - HTTP library (usually bundled with thehive4py)
+
+**Environment Variables**:
+- `THEHIVE_URL`, `THEHIVE_API_KEY` - TheHive connection details
+
+**API Pattern**: Hybrid approach
+- Accepts existing `TheHiveApi` object via `api=` parameter for efficiency
+- OR accepts belt-style `thehive_url` and `api_key` parameters
+- Falls back to environment variables if neither provided
+
+**Error Handling**:
+- `ValueError` - Configuration errors (missing credentials, invalid TLP, case/observable not found)
+- `ConnectionError` - Infrastructure errors (network issues, server unreachable, API errors)
+
+**Key Features**:
+- Direct access to TheHive v3.4.0 endpoints not exposed in thehive4py 1.6.0
+- Tag append operations merge with existing tags (don't replace)
+- Description append preserves existing content with visual separator
+- Two observable search modes:
+  - Name-based: `obsfind_any_by_type_data()` finds files by filename, non-files by value
+  - Hash-based: `obsfind_dupes_by_id()` finds true file duplicates by content (hash), excludes original
+- Uses `requests` library directly with connection details extracted from API object
+
+**Dev-notes**: See `dev-notes/thehive_extended_api.md`
+
 ## Development Workflow
 
 ### Adding New Modules
