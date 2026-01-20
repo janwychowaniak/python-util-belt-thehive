@@ -5,7 +5,7 @@ Manual test scenarios for the thehive_extended_api module.
 ## Test Configuration
 
 ```sh
-# Environment setup (add to ~/.bashrc or run before tests)
+# Environment setup (add to your env or run before tests)
 export THEHIVE_URL="https://thehive.example.com:9000"
 export THEHIVE_API_KEY="your-test-api-key-here"
 ```

@@ -293,6 +293,71 @@ pip install thehive4py requests
 
 ---
 
+### thehive_case_models
+
+**Object-Oriented Case Models** - Python dataclasses for TheHive with JSON serialization
+
+Provides OOP data models for programmatically constructing TheHive cases and observables, with bidirectional JSON conversion and automatic field normalization. Build case structures in memory without API interaction, exchange data with external systems, or process case data with Python objects instead of raw dictionaries.
+
+**Features:**
+- CaseDatamodel and ObservableDatamodel classes with sensible defaults
+- Bidirectional conversion: JSON dicts ↔ Python objects
+- TLP/PAP/Severity normalization from int, string, or color names (case-insensitive)
+- Automatic capture of custom/unknown fields in 'nonstandards' dict
+- Field name mapping for observables (dataType ↔ type, data ↔ value, message ↔ description)
+- Zero external dependencies (pure Python stdlib)
+
+**Usage:**
+```python
+from thehive_case_models import CaseDatamodel, ObservableDatamodel, dump
+
+# Build case programmatically
+case = CaseDatamodel(
+    title='Phishing Campaign',
+    description='Widespread phishing targeting finance',
+    casetype='phishing',
+    severity=3,  # or 'high', 'H', etc.
+    tlp=2,       # or 'amber', 'AMBER', etc.
+    tags=['phishing', 'email']
+)
+
+# Add observables
+obs1 = ObservableDatamodel(type='domain', value='evil.com', ioc=True, tlp=3)
+obs2 = ObservableDatamodel(type='ip', value='1.2.3.4', ioc=True)
+case.observables = [obs1, obs2]
+
+# Save to JSON file
+dump(case, 'phishing_case.json')
+
+# Load from JSON
+import json
+from thehive_case_models import Generator
+
+with open('case.json') as f:
+    data = json.load(f)
+
+gen = Generator(data)
+case = gen.get_case_datamodel()
+observables = gen.get_observables_datamodels()
+case.observables = observables
+
+# Work with Python objects
+print(case.title)
+for obs in case.observables:
+    if obs.ioc:
+        print(f"IOC: {obs.type} = {obs.value}")
+
+# Convert back to dict
+from thehive_case_models import dictonarize_case
+case_dict = dictonarize_case(case)
+```
+
+**Dependencies:** None (pure Python stdlib)
+
+**Version:** 1.0 | **Author:** Jan
+
+---
+
 ## Development Workflow
 
 ### Adding New Utilities
@@ -362,12 +427,14 @@ python-util-belt-thehive/
 │   ├── thehive_search.py  # TheHive API search helper
 │   ├── ioc_parser.py      # IOC extraction and normalization
 │   ├── api_connector.py   # Connection establishment and health checking
-│   └── thehive_extended_api.py  # Extended TheHive API operations
+│   ├── thehive_extended_api.py  # Extended TheHive API operations
+│   └── thehive_case_models.py   # OOP case/observable models with JSON serialization
 ├── dev-notes/             # Manual testing reference guides
 │   ├── thehive_search.md  # Test scenarios for thehive_search
 │   ├── ioc_parser.md      # Test scenarios for ioc_parser
 │   ├── api_connector.md   # Test scenarios for api_connector
-│   └── thehive_extended_api.md  # Test scenarios for thehive_extended_api
+│   ├── thehive_extended_api.md  # Test scenarios for thehive_extended_api
+│   └── thehive_case_models.md   # Test scenarios for thehive_case_models
 └── scripts/               # Helper tools
     ├── copy_module.sh     # Copy module to target project
     └── list_modules.py    # List available modules with metadata

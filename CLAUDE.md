@@ -361,6 +361,43 @@ observable = {
 
 **Dev-notes**: See `dev-notes/thehive_extended_api.md`
 
+### thehive_case_models (v1.0)
+
+**Purpose**: Object-oriented models for TheHive case and observable data with JSON serialization/deserialization
+
+**Location**: `modules/thehive_case_models.py`
+
+**Classes**:
+- `CaseDatamodel(title, description, casetype, severity, pap, tlp, tags, customFields, nonstandards)` - Case data model with defaults
+- `ObservableDatamodel(type, value, description, tlp, ioc, sighted, tags, nonstandards)` - Observable data model with defaults
+- `Generator(case_input_dict)` - JSON to model converter with normalization
+
+**Functions**:
+- `Generator.get_case_datamodel() -> CaseDatamodel` - Parse JSON dict to case model
+- `Generator.get_observables_datamodels() -> List[ObservableDatamodel]` - Parse observables list to models
+- `dictonarize_case(case_model) -> dict` - Convert case model to dict (flattens nonstandards)
+- `dump(case_model_or_dict, filepath) -> None` - Save case to JSON file
+
+**Dependencies**: None (pure stdlib)
+
+**Environment Variables**: None
+
+**Key Features**:
+- Bidirectional conversion between JSON dicts and Python objects
+- TLP/PAP/Severity normalization from int, string, or color names (case-insensitive)
+- Automatic capture of custom/unknown fields in 'nonstandards' dict
+- Field name mapping for observables (dataType ↔ type, data ↔ value, message ↔ description)
+- Sensible defaults (severity=2, tlp=2, pap=2)
+- Pure Python implementation (no external dependencies)
+
+**Use Cases**:
+- Programmatically build case/observable structures without API interaction
+- Exchange case data with external systems via JSON
+- Process and manipulate case data in memory with Python objects
+- Normalize TLP/PAP/severity values from various input formats
+
+**Dev-notes**: See `dev-notes/thehive_case_models.md`
+
 ## Development Workflow
 
 ### Adding New Modules
